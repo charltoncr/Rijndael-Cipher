@@ -1,6 +1,6 @@
 /*
  *	Fast Rijndael Cipher implementation for block sizes 128, 192 & 256, and
- *  key sizes 128, 192 & 256.
+ *	key sizes 128, 192 & 256.
  *	Was: FIPS-197 compliant AES implementation: aes.c by Christophe Devine
  *
  *	Copyright © 2018 Ron Charlton
@@ -8,16 +8,16 @@
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *	the Free Software Foundation, either version 2 of the License, or
  *	(at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
+ *	This program is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *	GNU General Public License for more details.
  *
  *	You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -54,7 +54,7 @@
  * Electronic Codebook (ECB) mode:
  *
  * Call rijn_set_key to initialize a context (ctx) with a key, nkeybits
- * and nblockbits.  Then call rijn_encrypt with the initialized context and
+ * and nblockbits.	Then call rijn_encrypt with the initialized context and
  * pointers to an input buffer and output buffer to encrypt plaintext "input"
  * to ciphertext "output".  To decrypt call rijn_decrypt with a context
  * that was initialized with the same key, nkeybits and nblockbits as were
@@ -65,21 +65,21 @@
  * Cipher Block Chaining (CBC) mode:
  *
  * Call rijn_set_key to initialize a context (ctx) with a given key, nkeybits
- * and nblockbits.  Then call rijn_cbc_encrypt with the initialized context,
+ * and nblockbits.	Then call rijn_cbc_encrypt with the initialized context,
  * pointers to an input buffer and an output buffer, as well as with a randomly
  * selected initialization vector (iv), to encrypt plaintext "input" to
  * ciphertext "output".  nbytes specifies how long the input plaintext is.
  * nbytes must be an integer multiple of nblockbits/8 with nblockbits that was
- * specified in the rijn_set_key call.  iv's size must be nblockbits/8 bytes.
+ * specified in the rijn_set_key call.	iv's size must be nblockbits/8 bytes.
  * To decrypt: Use the same context (ctx) as was used for encrypting the
- * ciphertext.  Call rijn_cbc_decrypt with the pointers to an input buffer and
+ * ciphertext.	Call rijn_cbc_decrypt with the pointers to an input buffer and
  * output buffer, as well as the same iv used to encrypt the plaintext.
  * nbytes specifies how long the input ciphertext is.  nbytes
  * must be an integer multiple of nblockbits/8 with the same nblockbits that was
  * specified with rijn_set_key.  Calls to rijn_cbc_encrypt or rijn_cbc_decrypt
  * can be chained by repeated calls with the same context and with the iv
  * that was returned from the preceding call.  This can be used to encrypt
- * or decrypt a large amount of data nbytes at a time.  rijn_cbc_encrypt and
+ * or decrypt a large amount of data nbytes at a time.	rijn_cbc_encrypt and
  * rijn_cbc_decrypt return 0 on success or 1 on invalid argument.
  *
  * For both ECB and CBC modes, nblockbits and nkeybits can be 128, 192 or 256.
@@ -100,7 +100,7 @@
  */
 
 static char rcs_id_rijn[] =
-		"$Id: rijndael.c,v 1.20 2025-01-18 04:26:26-05 ron Exp $";
+		"$Id: rijndael.c,v 1.21 2025-01-18 04:42:13-05 ron Exp $";
 
 #include <errno.h>
 #include <stdint.h>
@@ -558,8 +558,8 @@ int rijn_set_key(rijn_context *ctx, uint8_t *key, int nkeybits, int nblockbits)
 	}
 
 	if ( !ctx || !key ||
-		( nkeybits   != 128 && nkeybits   != 192 && nkeybits   != 256 ) ||
-	    ( nblockbits != 128 && nblockbits != 192 && nblockbits != 256 ) )
+		( nkeybits	 != 128 && nkeybits   != 192 && nkeybits   != 256 ) ||
+		( nblockbits != 128 && nblockbits != 192 && nblockbits != 256 ) )
 	{
 		errno = EINVAL;
 		return( 1 );
@@ -664,16 +664,16 @@ int rijn_set_key(rijn_context *ctx, uint8_t *key, int nkeybits, int nblockbits)
 
 	/*
 	 * The following if block changes RK by the indicated values:
-     *
-	 *                 Nk
-     * 	   	   ||  4 |  6 |  8 |
-	 *	    ===++====+====+====+
-	 * 	     4 ||  0 |  0 |  0 |
-	 * 	    ---++----+----+----+
-	 *   Nb  6 || -4 |  0 | -4 |
-	 * 	    ---++----+----+----+
-	 * 	     8 || -4 | -2 |  0 |
-	 * 	    ---++----+----+----+
+	 *
+	 *				   Nk
+	 *		   ||  4 |	6 |  8 |
+	 *		===++====+====+====+
+	 *		 4 ||  0 |	0 |  0 |
+	 *		---++----+----+----+
+	 *	 Nb  6 || -4 |	0 | -4 |
+	 *		---++----+----+----+
+	 *		 8 || -4 | -2 |  0 |
+	 *		---++----+----+----+
 	 */
 	if (Nb > 4 && Nk != Nb)
 	{
@@ -781,7 +781,7 @@ void rijn_encrypt( rijn_context *ctx, uint8_t *input, uint8_t *output )
 	int blocklen = ctx->blocklen;
 	/* "= 0" quiets compiler complaints about uninitialized variables */
 	uint32_t *RK, X0, X1, X2, X3, X4 = 0, X5 = 0, X6 = 0, X7 = 0;
-	uint32_t	  Y0, Y1, Y2, Y3, Y4, 	  Y5, 	  Y6 = 0, Y7 = 0;
+	uint32_t	  Y0, Y1, Y2, Y3, Y4,	  Y5,	  Y6 = 0, Y7 = 0;
 
 	RK = ctx->erk;
 
@@ -804,7 +804,7 @@ void rijn_encrypt( rijn_context *ctx, uint8_t *input, uint8_t *output )
 
 #define RIJN_FROUND(X0,X1,X2,X3,X4,X5,X6,X7,Y0,Y1,Y2,Y3,Y4,Y5,Y6,Y7)	 \
 {														\
-	switch ( blocklen )									\
+	switch ( blocklen ) 								\
 	{													\
 	case 16 :											\
 														\
@@ -1081,7 +1081,7 @@ void rijn_decrypt( rijn_context *ctx, uint8_t *input, uint8_t *output )
 	int blocklen = ctx->blocklen;
 	/* "= 0" quiets compiler complaints about uninitialized variables */
 	uint32_t *RK, X0, X1, X2, X3, X4 = 0, X5 = 0, X6 = 0, X7 = 0;
-	uint32_t	  Y0, Y1, Y2, Y3, Y4, 	  Y5, 	  Y6 = 0, Y7 = 0;
+	uint32_t	  Y0, Y1, Y2, Y3, Y4,	  Y5,	  Y6 = 0, Y7 = 0;
 
 	RK = ctx->drk;
 
@@ -1104,7 +1104,7 @@ void rijn_decrypt( rijn_context *ctx, uint8_t *input, uint8_t *output )
 
 #define RIJN_RROUND(X0,X1,X2,X3,X4,X5,X6,X7,Y0,Y1,Y2,Y3,Y4,Y5,Y6,Y7)	\
 {														\
-	switch ( blocklen )									\
+	switch ( blocklen ) 								\
 	{													\
 	case 16 :											\
 														\
@@ -1483,7 +1483,7 @@ int rijn_cbc_decrypt( rijn_context *ctx, uint8_t *iv, uint8_t *input,
 
 
 
-/* TEST is defined in rijndael_test.c.  rijndael_test.c includes this file. */
+/* TEST is defined in rijndael_test.c.	rijndael_test.c includes this file. */
 #ifdef TEST
 
 
@@ -1736,36 +1736,36 @@ ecb_test( int verbose )
 
 /* rijn_enc_cbc_test[blocksize][keysize][string_length_max] */
 static uint8_t rijn_enc_cbc_test[3][3][65] = {
-    {
+	{
 		"2F844CBF78EBA70DA7A49601388F1AB6",
 		"BA50C94440C04A8C0899D42658E25437",
 		"C0FEFFF07506A0B4CD7B8B0CF25D3664"
-    }, {
+	}, {
 		"DBA6D2DA0AAE9FD8E87FBC5C547E25016DE334C516ED0586",
 		"8C04279EB638928B314645E3BAFE088545F09CC1B8B70636",
 		"DE8ABD2218FE22BB921F74B448EC8CC53BFF66688E2CB879"
-    }, {
+	}, {
 		"A4E969BF29A3AFCC924EB4C2E6066314D9E8C65495CD49800B2FE84BD763FADF",
 		"0BEC783FA63A9AB7A1FDF4BBAD0FD66D133928CA6292BC8BB2B952CD822F8873",
 		"86E532BCED9D7850E75830564E5BB2842DCAA92DA2929EBA3D41B1C6289E5058"
-    }
+	}
 };
 
 /* rijn_dec_cbc_test[blocksize][keysize][string_length_max] */
 static uint8_t rijn_dec_cbc_test[3][3][65] = {
-    {
+	{
 		"9B8FB71E035CEFF9CBFA1346E5ACEFE0",
 		"6342BFDDD2F6610350458B6695463484",
 		"CD6429CF3F81F8B4F82BC627A8283096"
-    }, {
+	}, {
 		"33E98D9D806902776F214CE9B2817164313146205407DFC6",
 		"28C421A46372AA2244E5FF2C16E18D97D553466A8F0670CA",
 		"2DBBCD1F866A55F792AE4FCFF13474583F28AA7E36B40999"
-    }, {
+	}, {
 		"C63E639223E51399628D506F93B73829845AB0A4D60D83FA61A764C75143933C",
 		"68C89CCBD6F7E6B636B6238F23BCA5EF6C68BCB07D05397413660BC1FEDBAF15",
 		"9A748895557CF1F6FFC053EC8E87EBAF386D9E0A632AECC6EC1D3017D0863987"
-    }
+	}
 };
 
 
@@ -1861,9 +1861,9 @@ cbc_test( int verbose )
 
 				for ( i = 0; i < 400; i++ )
 				{
-                    if ( i == 0 )
+					if ( i == 0 )
 					{
-                        memset( IV, 0, sizeof(IV) );
+						memset( IV, 0, sizeof(IV) );
 					}
 
 					if ( verbose )
@@ -1881,17 +1881,17 @@ cbc_test( int verbose )
 					{
 						if( m == 0 )
 						{
-                            memcpy( T_previous, CT, size );
-                            memcpy( IV_previous, IV, size );
-                            rijn_cbc_encrypt( &ctx, IV, PT, CT, size );
+							memcpy( T_previous, CT, size );
+							memcpy( IV_previous, IV, size );
+							rijn_cbc_encrypt( &ctx, IV, PT, CT, size );
 							memcpy(PT, j == 0 ? IV_previous : T_previous, size);
 						}
 						else
 						{
-                            memcpy( T_previous, PT, size );
-                            rijn_cbc_decrypt( &ctx, IV, CT, PT, size );
-                            memcpy( IV, CT, size );
-                            memcpy( CT, PT, size );
+							memcpy( T_previous, PT, size );
+							rijn_cbc_decrypt( &ctx, IV, CT, PT, size );
+							memcpy( IV, CT, size );
+							memcpy( CT, PT, size );
 						}
 					}
 
