@@ -1,6 +1,6 @@
 /*
- *	Fast Rijndael Cipher implementation for block sizes and key sizes
- *  128, 192 & 256.
+ *	Fast Rijndael Cipher implementation for block sizes 128, 192 & 256, and
+ *  key sizes 128, 192 & 256.
  *	Was: FIPS-197 compliant AES implementation: aes.c by Christophe Devine
  *
  *	Copyright © 2018 Ron Charlton
@@ -22,8 +22,8 @@
 
 /*
  * Ron Charlton revised the AES code (2018-01-16) to add block bit-size of
- * 192 and 256, per the Rijndael Cipher spec.  The 128-bit block size code
- * remains FIPS-197 compliant.
+ * 192 and 256, per the Rijndael Cipher spec.  Ron also added the CBC code.
+ * The 128-bit block size code remains FIPS-197 compliant.
  *
  * rijndael.c's speed is due to Christophe Devine's AES implementation.
  * Christophe deserves most of the credit for this source code.
@@ -60,17 +60,17 @@
  * that was initialized with the same key, nkeybits and nblockbits as were
  * used for encryption, to decrypt ciphertext "input" to the original plaintext
  * "output".  rijn_set_key returns 0 on success or 1 on invalid argument. Input
- * and output size must be nblockbits/8 uint8_t's.
+ * and output size must be nblockbits bits.
  *
  * Cipher Block Chaining (CBC) mode:
  *
- * Call rijn_set_key to initialize a context (ctx) for a given key, nkeybits
+ * Call rijn_set_key to initialize a context (ctx) with a given key, nkeybits
  * and nblockbits.  Then call rijn_cbc_encrypt with the initialized context,
  * pointers to an input buffer and an output buffer, as well as with a randomly
  * selected initialization vector (iv), to encrypt plaintext "input" to
  * ciphertext "output".  nbytes specifies how long the input plaintext is.
  * nbytes must be an integer multiple of nblockbits/8 with nblockbits that was
- * specified in the rijn_set_key call.  iv's size must be nblockbits/8.
+ * specified in the rijn_set_key call.  iv's size must be nblockbits/8 bytes.
  * To decrypt: Use the same context (ctx) as was used for encrypting the
  * ciphertext.  Call rijn_cbc_decrypt with the pointers to an input buffer and
  * output buffer, as well as the same iv used to encrypt the plaintext.
@@ -93,12 +93,14 @@
  * aes_set_key(ctx, key, nkeybits), providing AES names for convenience.
  *
  * See the commented-out #define below for how to use pre-computed tables.
+ * Alao see "typedef xxxx cbc_word" below and set it appropriately for your
+ * compiler.
  *
  * Rijndael is pronounced 'rain-dal with the "a" in "dal" pronounced as in "pal".
  */
 
 static char rcs_id_rijn[] =
-		"$Id: rijndael.c 5.27 2020-03-30 12:12:49-05 Ron Exp $";
+		"$Id: rijndael.c,v 1.20 2025-01-18 04:26:26-05 ron Exp $";
 
 #include <errno.h>
 #include <stdint.h>
@@ -116,7 +118,8 @@ static char rcs_id_rijn[] =
 extern "C" {
 #endif
 
-/* Set cbc_word to be the widest unsigned integer type your compiler supports: */
+/* typedef cbc_word to be the widest, fast unsigned */
+/* integer type your compiler supports: */
 typedef uint64_t cbc_word;
 
 /* uncomment the following line to use pre-computed tables */
@@ -554,7 +557,8 @@ int rijn_set_key(rijn_context *ctx, uint8_t *key, int nkeybits, int nblockbits)
 		do_init = 0;
 	}
 
-	if ( ( nkeybits  != 128 && nkeybits   != 192 && nkeybits   != 256 ) ||
+	if ( !ctx || !key ||
+		( nkeybits   != 128 && nkeybits   != 192 && nkeybits   != 256 ) ||
 	    ( nblockbits != 128 && nblockbits != 192 && nblockbits != 256 ) )
 	{
 		errno = EINVAL;
@@ -662,7 +666,7 @@ int rijn_set_key(rijn_context *ctx, uint8_t *key, int nkeybits, int nblockbits)
 	 * The following if block changes RK by the indicated values:
      *
 	 *                 Nk
-	 * 	   	   ||  4 |  6 |  8 |
+     * 	   	   ||  4 |  6 |  8 |
 	 *	    ===++====+====+====+
 	 * 	     4 ||  0 |  0 |  0 |
 	 * 	    ---++----+----+----+
@@ -1482,6 +1486,8 @@ int rijn_cbc_decrypt( rijn_context *ctx, uint8_t *iv, uint8_t *input,
 /* TEST is defined in rijndael_test.c.  rijndael_test.c includes this file. */
 #ifdef TEST
 
+
+
 #include <string.h>
 
 #ifdef __cplusplus
@@ -1523,9 +1529,9 @@ static int params[3][3][2] = {
  * Blocksize=192 and 256 data from rijndael.py from
  * <https://fastcrypto.org/vmac/rijndael.txt>, checked with rijndaelPortable.c
  * from <http://www.kylheku.com/~kaz/rijndael.html>.
- *
- * rijn_enc_ecb_test[blocksize][keysize][string_length_max]
  */
+
+/* rijn_enc_ecb_test[blocksize][keysize][string_length_max] */
 static uint8_t rijn_enc_ecb_test[3][3][65] = {
 	{
 		"A04377ABE259B0D0B5BA2D40A501971B",
@@ -1724,11 +1730,11 @@ ecb_test( int verbose )
  * cbc_e_m.txt and cbc_d_m.txt at I=399 CT/PT, for blocksize=128.
  *
  * Blocksize=192 and 256 data from rijndael.py from
- * <https://fastcrypto.org/vmac/rijndael.txt>, checked with rijndaelPortable.c
+ * <https://fastcrypto.org/vmac/rijndael.txt>, checked with rijndael[Portable].c
  * from <http://www.kylheku.com/~kaz/rijndael.html>.
- *
- * rijn_enc_cbc_test[blocksize][keysize][string_length_max]
  */
+
+/* rijn_enc_cbc_test[blocksize][keysize][string_length_max] */
 static uint8_t rijn_enc_cbc_test[3][3][65] = {
     {
 		"2F844CBF78EBA70DA7A49601388F1AB6",
